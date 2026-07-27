@@ -3,15 +3,10 @@
 import { useState } from "react"
 import { Package, Star, Truck } from "lucide-react"
 import { ReviewType } from "@/types/review.type"
+import { ProductType } from "@/types/productType"
 import WriteReview from "./WriteReview";
 interface ProductTabsProps {
-  product: {
-    description: string
-    category?: { name: string }
-    subcategory?: { name: string }[]
-    brand?: { name: string }
-    sold?: number
-  }
+  product: ProductType
   reviews: ReviewType[]
   productId: string
 }
@@ -173,7 +168,7 @@ console.log(reviews)
                         ))}
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600">{review.title}</p>
+                    <p className="text-sm text-gray-600">{review.review}</p>
                   </div>
                 ))}
               </div>

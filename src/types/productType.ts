@@ -21,8 +21,12 @@ export interface ProductType {
   price: number
   priceAfterDiscount?: number
   imageCover: string
+  images?: string[]
+  quantity?: number
   ratingsAverage: number
   ratingsQuantity?: number
   category: CategoryType
+  subcategory?: CategoryType[]
   brand: BrandType
+  sold?: number
 }
