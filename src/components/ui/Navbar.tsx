@@ -4,11 +4,11 @@ import * as React from "react"
 import { useContext, useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Heart, ShoppingCart, Search } from "lucide-react"
+import { Heart, LogOut, Search, ShoppingCart, UserRound } from "lucide-react"
 import logo from "@/assets/images/logo.png"
 import { CartContext } from "@/app/_context/CartContext"
 import { getAllCategories } from "@/services/Categorys"
-import { useSession } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -39,14 +39,14 @@ export default function Navbar() {
   }, [])
 
   return (
-    <nav className="sticky top-0 z-50 bg-white flex items-center justify-between gap-4 px-6 py-3 border-b shadow-sm">
+    <nav className="sticky top-0 z-50 flex flex-wrap items-center gap-3 border-b bg-white px-3 py-3 shadow-sm sm:px-6">
       {/* اللوجو */}
       <Link href="/" className="shrink-0">
         <Image src={logo} alt="FreshCart" width={120} height={32} />
       </Link>
 
       {/* السيرش */}
-      <div className="relative flex-1 max-w-md">
+      <div className="relative order-3 w-full md:order-none md:flex-1 xl:max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <input
           type="text"
@@ -56,7 +56,7 @@ export default function Navbar() {
       </div>
 
       {/* القوائم */}
-      <NavigationMenu>
+      <NavigationMenu className="hidden xl:flex">
         <NavigationMenuList>
           {/* Home */}
           <NavigationMenuItem>
@@ -74,7 +74,6 @@ export default function Navbar() {
             </NavigationMenuLink>
           </NavigationMenuItem>
 
-          {/* Categories dropdown - ديناميكي دلوقتي */}
           <NavigationMenuItem>
             <NavigationMenuTrigger>Categories</NavigationMenuTrigger>
             <NavigationMenuContent>
@@ -117,32 +116,46 @@ export default function Navbar() {
             </NavigationMenuLink>
           </NavigationMenuItem>
 
-          {!isLoggedIn && (
-            <>
-              <NavigationMenuItem>
-                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                  <Link href="/login">Sign In</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                  <Link href="/login/signup">Sign up</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-            </>
-          )}
-
-          {isLoggedIn && (
-            <NavigationMenuItem>
-              <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                <Link href="/profile">My Account</Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-          )}
-
         </NavigationMenuList>
       </NavigationMenu>
+
+      <div className="ml-auto flex shrink-0 items-center gap-2">
+        {!isLoggedIn ? (
+          <>
+            <Link
+              href="/login"
+              className="inline-flex h-9 items-center justify-center rounded-md border border-emerald-600 px-3 text-sm font-medium text-emerald-700 transition-colors hover:bg-emerald-50"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/login/signup"
+              className="inline-flex h-9 items-center justify-center rounded-md bg-emerald-600 px-3 text-sm font-medium text-white transition-colors hover:bg-emerald-700"
+            >
+              <span className="hidden sm:inline">Create Account</span>
+              <span className="sm:hidden">Sign Up</span>
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link
+              href="/profile"
+              className="inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+            >
+              <UserRound className="size-4" />
+              <span className="hidden sm:inline">My Account</span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => signOut({ redirectTo: "/" })}
+              className="inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium text-red-600 hover:bg-red-50"
+            >
+              <LogOut className="size-4" />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
+          </>
+        )}
+      </div>
     </nav>
   )
 }

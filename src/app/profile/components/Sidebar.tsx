@@ -34,7 +34,7 @@ export default function Sidebar() {
         <button
           onClick={() =>
             signOut({
-              callbackUrl: "/login",
+              redirectTo: "/login",
             })
           }
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-red-500 hover:bg-red-50"

@@ -5,16 +5,13 @@ import ChangePasswordForm from "./components/ChangePasswordForm"
 import Addresses from "./components/Addresses"
 import { getCurrentUser } from "@/lib/auth"
 import { getAddresses } from "@/services/address.action"
+import { redirect } from "next/navigation"
 
 export default async function ProfilePage() {
   const user = await getCurrentUser()
 
   if (!user) {
-    return (
-      <main className="flex min-h-screen items-center justify-center">
-        <p>User not found</p>
-      </main>
-    )
+    redirect("/login?callbackUrl=/profile")
   }
 
   const addressResponse = await getAddresses()

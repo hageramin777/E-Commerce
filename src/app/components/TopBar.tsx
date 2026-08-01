@@ -23,18 +23,10 @@ export default function TopBar() {
           +1 (800) 123-4567
         </span>
        <div className="flex items-center gap-5">
-           <span className="flex items-center gap-2">
+        <span className="flex items-center gap-2">
            <Mail className="size-4 text-emerald-600"/>
           support@freshcart.com
         </span>
-
-        <a href="/login" className="hover:text-emerald-600">
-          Sign In
-        </a>
-
-        <a href="/login/signup" className="hover:text-emerald-600">
-          Sign Up
-        </a>
       </div>
 </div>
     </div>

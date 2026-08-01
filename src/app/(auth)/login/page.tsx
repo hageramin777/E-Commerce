@@ -11,12 +11,13 @@ import toast from "react-hot-toast"
 import { Truck, ShieldCheck, Clock, ShieldAlert, Users, Star, LogIn } from "lucide-react"
 import cartImage from "@/assets/images/cart-illustration.png"
 import { loginSchema, loginDataType } from "./login.schma"
-import { loginUpAction } from "./login.action"
-import { signIn } from "next-auth/react"
+import { loginAction } from "./login.action"
+import { useSession } from "next-auth/react"
 
 
-export default function page() {
+export default function LoginPage() {
   const router = useRouter()
+  const { update: updateSession } = useSession()
   const [isLoading, setIsLoading] = useState(false)
 
   const {
@@ -32,29 +33,31 @@ export default function page() {
   })
 
   
-async function haldelSignUp(values: loginDataType) {
-  setIsLoading(true)
+  async function handleSignIn(values: loginDataType) {
+    setIsLoading(true)
 
-   try {
-    const result = await signIn("credentials", {
-      email: values.email,
-      password: values.password,
-      redirect: false,
-    })
+    try {
+      const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl") ?? "/"
+      const result = await loginAction(values, callbackUrl)
 
-       if (result?.ok) {
+      if (!result.ok) {
+        toast.error(result.message ?? "Invalid email or password", {
+          position: "top-center",
+        })
+        return
+      }
+
+      await updateSession()
       toast.success("Signed in successfully", { position: "top-center" })
-      router.push("/")
-    } else {
-      toast.error("Invalid email or password", { position: "top-center" })
+      router.replace(callbackUrl.startsWith("/") && !callbackUrl.startsWith("//") ? callbackUrl : "/")
+      router.refresh()
+    } catch (error) {
+      console.error("[LoginPage] Sign in failed:", error)
+      toast.error("Failed to connect to server", { position: "top-center" })
+    } finally {
+      setIsLoading(false)
     }
-  } catch (error) {
-    console.log(error)
-    toast.error("Failed to connect to server", { position: "top-center" })
-  } finally {
-    setIsLoading(false)
   }
-}
 
   return (
     <div className="min-h-screen grid md:grid-cols-2 items-center gap-10 max-w-6xl mx-auto px-6 py-10">
@@ -98,28 +101,7 @@ async function haldelSignUp(values: loginDataType) {
           Sign in to continue your fresh shopping experience
         </p>
 
-        <div className="mt-6 space-y-3">
-          <button
-            type="button"
-            className="w-full border rounded-lg py-2.5 flex items-center justify-center gap-2 text-sm font-medium hover:bg-gray-50"
-          >
-            <span className="text-red-500 font-bold">G</span> Continue with Google
-          </button>
-          <button
-            type="button"
-            className="w-full border rounded-lg py-2.5 flex items-center justify-center gap-2 text-sm font-medium hover:bg-gray-50"
-          >
-            <span className="text-blue-600 font-bold">f</span> Continue with Facebook
-          </button>
-        </div>
-
-        <div className="flex items-center gap-3 my-5">
-          <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-xs text-gray-400">OR CONTINUE WITH EMAIL</span>
-          <div className="flex-1 h-px bg-gray-200" />
-        </div>
-
-        <form onSubmit={handleSubmit(haldelSignUp)}>
+        <form className="mt-6" onSubmit={handleSubmit(handleSignIn)}>
           <MYInput<loginDataType>
             label="Email Address"
             type="email"
@@ -149,15 +131,10 @@ async function haldelSignUp(values: loginDataType) {
             error={errors.password?.message}
           />
 
-          <label className="flex items-center gap-2 text-sm text-gray-600 mt-1 mb-4">
-            <input type="checkbox" className="rounded" />
-            Keep me signed in
-          </label>
-
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2"
+            className="mt-4 w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2"
           >
             <LogIn className="size-4" />
             {isLoading ? "Signing in..." : "Sign In"}

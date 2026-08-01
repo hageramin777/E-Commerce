@@ -1,11 +1,4 @@
-import { jwtDecode } from "jwt-decode"
 import { auth } from "./nextauth.config"
-
-interface TokenPayload {
-  id: string
-  name?: string
-  role?: string
-}
 
 export interface CurrentUser {
   id: string
@@ -16,23 +9,15 @@ export interface CurrentUser {
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
   const session = await auth()
-  const token = session?.realTokenFromBackEnd
 
-  if (!session?.user || !token) {
+  if (!session?.user?.id) {
     return null
   }
 
-  try {
-    const payload = jwtDecode<TokenPayload>(token)
-
-    return {
-      id: payload.id,
-      name: payload.name ?? session.user.name ?? "User",
-      email: session.user.email,
-      role: payload.role ?? "user",
-    }
-  } catch (error) {
-    console.log(error)
-    return null
+  return {
+    id: session.user.id,
+    name: session.user.name ?? "User",
+    email: session.user.email,
+    role: session.user.role ?? "user",
   }
 }

@@ -31,7 +31,7 @@ interface AddressResult {
 
 async function getToken() {
   const session = await auth()
-  return session?.realTokenFromBackEnd
+  return session?.accessToken
 }
 
 export async function getAddresses(): Promise<AddressResult> {
