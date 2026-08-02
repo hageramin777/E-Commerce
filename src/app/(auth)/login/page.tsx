@@ -3,7 +3,6 @@
 import MYInput from "@/app/components/MYInput"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
@@ -11,13 +10,10 @@ import toast from "react-hot-toast"
 import { Truck, ShieldCheck, Clock, ShieldAlert, Users, Star, LogIn } from "lucide-react"
 import cartImage from "@/assets/images/cart-illustration.png"
 import { loginSchema, loginDataType } from "./login.schma"
-import { loginAction } from "./login.action"
-import { useSession } from "next-auth/react"
+import { signIn } from "next-auth/react"
 
 
 export default function LoginPage() {
-  const router = useRouter()
-  const { update: updateSession } = useSession()
   const [isLoading, setIsLoading] = useState(false)
 
   const {
@@ -38,19 +34,31 @@ export default function LoginPage() {
 
     try {
       const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl") ?? "/"
-      const result = await loginAction(values, callbackUrl)
+      const safeCallbackUrl =
+        callbackUrl.startsWith("/") && !callbackUrl.startsWith("//")
+          ? callbackUrl
+          : "/"
+      const result = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        redirect: false,
+        redirectTo: safeCallbackUrl,
+      })
 
-      if (!result.ok) {
-        toast.error(result.message ?? "Invalid email or password", {
-          position: "top-center",
-        })
+      if (!result || result.error || !result.ok) {
+        toast.error(
+          result?.error === "CredentialsSignin"
+            ? "Invalid email or password"
+            : "Unable to sign in right now",
+          {
+            position: "top-center",
+          }
+        )
         return
       }
 
-      await updateSession()
       toast.success("Signed in successfully", { position: "top-center" })
-      router.replace(callbackUrl.startsWith("/") && !callbackUrl.startsWith("//") ? callbackUrl : "/")
-      router.refresh()
+      window.location.assign(result.url ?? safeCallbackUrl)
     } catch (error) {
       console.error("[LoginPage] Sign in failed:", error)
       toast.error("Failed to connect to server", { position: "top-center" })
